@@ -5,7 +5,7 @@ import pandas as pd
 from openpyxl import Workbook
 
 def loadDB():
-    return pickle.load(open('drug_db.pickle', 'rb'))
+    return pickle.load(open('drug_db_add_api_1117.pickle', 'rb'))
 
 def getSimilarNode(drug_name, model):
     drug_vector = model.encode(drug_name)
@@ -37,14 +37,14 @@ def getAllChild(db, node):
 
 def read_xlsx_confict(file_name):
     df = pd.read_excel(io=file_name, dtype=str)
-    return df[['冲突', '不冲突']]
+    return df[['测试结果']]
 
 if __name__ == '__main__':
-    confict = read_xlsx_confict('../../drug/chatgpt/冲突测试.xlsx')
+    confict = read_xlsx_confict('../chatgpt/成分测试.xlsx')
     db = loadDB()
-    model = SentenceTransformer('../../model/biobert')
+    model = SentenceTransformer('../../../model/biobert-v1.1')
     workbook = Workbook()
-    save_file = "无异名表_冲突对齐.xlsx"
+    save_file = "异名表1117_成分对齐.xlsx"
     worksheet = workbook.active
         #每个workbook创建后，默认会存在一个worksheet，对默认的worksheet进行重命名
     worksheet.title = "Sheet1"
@@ -52,8 +52,8 @@ if __name__ == '__main__':
         res = []
         if not pd.isnull(data[0]):
             res = res + data[0].split('；')
-        if not pd.isnull(data[1]):
-            res = res  + data[1].split('；')
+        """if not pd.isnull(data[1]):
+            res = res  + data[1].split('；')"""
         for r in res:
             simiNode = getSimilarNode(r, model)
             childNode = getAllChild(db, simiNode)

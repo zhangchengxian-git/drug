@@ -21,7 +21,6 @@ def add_atc_db(model, atc, db):
     for index, row in atc.iterrows():
         if not row['atc_name'] in db:
             vector = get_vector(model, row['atc_name'])
-            print(row['atc_name'])
             db.add_node(row['atc_name'], vector=vector)
         if row['parent_atc_code'] == '0':
             continue
@@ -32,7 +31,6 @@ def add_atc_db(model, atc, db):
             continue
         if not father in db:
             father_vector = get_vector(model, father)
-            print(father)
             db.add_node(father, vector=father_vector)
         if father != row['atc_name']:
             db.add_edge(father, row['atc_name'])
@@ -42,25 +40,23 @@ def add_family_db(model, family, db):
     for index, row in family.iterrows():
         if not row['drug_name'] in db:
             vector = get_vector(model, row['drug_name'])
-            print(row['drug_name'])
             db.add_node(row['drug_name'], vector=vector)
         if row['parent_id'] == 0:
             continue
         father = row['tmp_drug']
         if not father in db:
             father_vector = get_vector(model, father)
-            print(father)
             db.add_node(father, vector=father_vector)
         if father != row['drug_name']:
             db.add_edge(father, row['drug_name'])
     return db
 
 def db_save(db):
-    pickle.dump(db, open('drug_db_add_api.pickle', 'wb'))
+    pickle.dump(db, open('drug_db_add_api_1117.pickle', 'wb'))
 
-def read_xlsx_api():
-    df = pd.read_excel(io='API以及API别名.xlsx', dtype=str)
-    return df[['API名称','API别名']]  
+def read_xlsx_api(file_path):
+    df = pd.read_excel(io=file_path, dtype=str)
+    return df[['药物名称','API别名']]  
 
 def add_api(model, api, db):
     for idx,data in api.iterrows():
@@ -74,18 +70,17 @@ def add_api(model, api, db):
                     if d != db.nodes[node]:
                         neighbor = list(db.neighbors(node))
                         db.add_node(d, vector=get_vector(model, d))
-                        print(d)
                         for nei in neighbor:
                             db.add_edge(d, nei)
     return db
     
                         
 def main():
-    atc = read_csv('../../drug/data_base/gene_drug_atc.csv')
-    family = read_csv('../../drug/data_base/gene_drug_family.csv')
+    atc = read_csv('../../../data/drug/data_base/gene_drug_atc.csv')
+    family = read_csv('../../../data/drug/data_base/gene_drug_family.csv')
     db = nx.DiGraph()
-    model = SentenceTransformer('../../model/biobert')
-    api = read_xlsx_api()
+    model = SentenceTransformer('../../../model/biobert-v1.1')
+    api = read_xlsx_api('../../../data/drug/data_base/待提取异名API20231117-1.xlsx')
     db = add_atc_db(model, atc, db)
     db = add_family_db(model, family, db)
     db = add_api(model, api, db)
